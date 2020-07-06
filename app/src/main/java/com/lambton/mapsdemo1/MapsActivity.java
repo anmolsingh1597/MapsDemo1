@@ -28,11 +28,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
-    private GoogleMap mMap;
-
     private static final int REQUEST_CODE = 1;
     private static final String TAG = "MapsActivity";
-
+    private GoogleMap mMap;
     //Fused location provider client
     private FusedLocationProviderClient mClient;
     private LocationRequest locationRequest;
