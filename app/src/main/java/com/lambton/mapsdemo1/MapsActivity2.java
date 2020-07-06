@@ -22,6 +22,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
@@ -30,19 +31,17 @@ import java.util.List;
 
 public class MapsActivity2 extends FragmentActivity implements OnMapReadyCallback {
 
-    private GoogleMap mMap;
     private static final int REQUEST_CODE = 1;
-    private Marker homeMarker;
-    private Marker destMarker;
-
+    private static final int POLYGON_SIDES = 3;
     Polyline line;
     Polygon shape;
-    private static final int POLYGON_SIDES = 3;
     List<Marker> markers = new ArrayList<>();
-
     //location with location manager and listner
     LocationManager locationManager;
     LocationListener locationListener;
+    private GoogleMap mMap;
+    private Marker homeMarker;
+    private Marker destMarker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,26 +115,50 @@ public class MapsActivity2 extends FragmentActivity implements OnMapReadyCallbac
                         .title("Your Destination")
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
                         .snippet("Your Long Tapped location");
-
-                if (destMarker !=  null){
-//                destMarker = mMap.addMarker(options);
-                    clearMap();
-                }
+/*
+                if (destMarker !=  null){ clearMap(); }
 
                     destMarker = mMap.addMarker(options);
 
-                drawLine();
+                drawLine();*/
+
+                // check if there are already the same number of markers, we clear the map
+                if(markers.size() == POLYGON_SIDES){ clearMap(); }
+
+                markers.add(mMap.addMarker(options));
+
+                if(markers.size() ==  POLYGON_SIDES){ drawShape(); }
+            }
+
+            private void drawShape() {
+                PolygonOptions options = new PolygonOptions()
+                        .fillColor(0x33000000)
+                        .strokeColor(Color.RED)
+                        .strokeWidth(5);
+
+                for(int i = 0; i<POLYGON_SIDES; i++){
+                    options.add(markers.get(i).getPosition());
+                }
+               shape = mMap.addPolygon(options);
             }
 
             private void clearMap() {
-                if(destMarker!=null){
+              /*  if(destMarker!=null){
                     destMarker.remove();
                     destMarker = null;
                 }
 
-                line.remove();
+                line.remove();*/
+            for(Marker marker: markers){
+                marker.remove();
             }
 
+            markers.clear();
+            shape.remove();
+            shape = null;
+
+            }
+ /*
             private void drawLine() {
                 PolylineOptions options = new PolylineOptions()
                         .color(Color.BLACK)
@@ -143,12 +166,13 @@ public class MapsActivity2 extends FragmentActivity implements OnMapReadyCallbac
                         .add(homeMarker.getPosition(), destMarker.getPosition());
 
                 line = mMap.addPolyline(options);
-            }
+            }*/
         });
 
     }
 
     private void startUpdateLocations() {
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -166,7 +190,7 @@ public class MapsActivity2 extends FragmentActivity implements OnMapReadyCallbac
     }
 
     private void requestLocationPermission() {
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},REQUEST_CODE);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
     }
 
     private boolean hasLocationPermission() {
@@ -186,8 +210,8 @@ public class MapsActivity2 extends FragmentActivity implements OnMapReadyCallbac
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
-        if(REQUEST_CODE == requestCode){
-            if(ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+        if (REQUEST_CODE == requestCode) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0, locationListener);
             }
         }
